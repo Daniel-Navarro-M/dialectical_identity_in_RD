@@ -10,20 +10,18 @@ Author: Daniel Navarro (`navarro_daniel@student.ceu.edu`).
 
 ## Pipeline
 
-Scripts run top-to-bottom. Each script writes its outputs to disk so the
-next stage can pick them up without re-running the prior one.
-
 | Script | Inputs | Outputs |
 |---|---|---|
 | `01_data_collection.R` | https://presidencia.gob.do/discursos | `data/raw/discursos/*.pdf` |
-| `02_preprocessing.R` | `data/raw/discursos/*.pdf`, `data/raw/dataset_reddit.csv` | `data/processed/discursos_corpus.rds`, `data/processed/reddit_corpus.rds`, `data/processed/*_dfm.rds` |
+| `02_preprocessing.R` | `data/raw/discursos/*.pdf`, `data/raw/dataset_reddit.csv` | `data/processed/{discursos,reddit}_{corpus,dfm}.rds`, `data/processed/reddit_sentences.rds` |
 | `03_RD_descriptive_stats.R` | `data/raw/{arrestos,detenidos_frontera,Naturalizaciones}.csv` | `output/figures/descriptive_stats/*.png` |
-| `04_NLP.R` | `data/processed/*` | `output/figures/nlp/*.png`, `output/tables/*` |
+| `04_NLP_topics.R` | `data/processed/*` | keyword tables, ldatuning K-sweeps, seeded LDA, migration framing plot |
+| `05_NLP_sentiment.R` | `data/processed/*` | transformer sentiment, hait* negativity, per-keyword pos/neg, upvote weighting |
 
-The PDFs are already committed to `data/raw/discursos/`. If you want to
-re-scrape them from scratch, run `01_data_collection.R`. Both reddit and
-migration CSVs are committed as well — they're small and hard to
-re-collect.
+Scripts are designed to be run interactively, section by section. Key
+decision points (DFM trimming thresholds in `02`, K per corpus in `04`) are
+exposed at the top of their section so they can be revisited after
+exploration.
 
 ## Folder layout
 
@@ -32,41 +30,52 @@ re-collect.
 ├── 01_data_collection.R
 ├── 02_preprocessing.R
 ├── 03_RD_descriptive_stats.R
-├── 04_NLP.R
+├── 04_NLP_topics.R
+├── 05_NLP_sentiment.R
 ├── data/
-│   ├── raw/                      # PDFs + CSVs as collected
-│   └── processed/                # corpora, DFMs (built by 02)
+│   ├── raw/                      # PDFs + CSVs
+│   └── processed/                # corpora, DFMs, sentence-level table
 ├── output/
 │   ├── figures/
-│   │   ├── descriptive_stats/    # plots used in the EDA section
-│   │   └── nlp/                  # wordclouds, topics, sentiment
+│   │   ├── descriptive_stats/
+│   │   └── nlp/
 │   └── tables/
 └── dialectical_identity_in_RD.Rproj
 ```
 
 ## Setup
 
-Open the `.Rproj` in RStudio (this sets the working directory) and install
-the dependencies:
+Open the `.Rproj` and install the R dependencies:
 
 ```r
 install.packages(c(
   "tidyverse", "rvest", "pdftools", "stringi",
   "quanteda", "quanteda.textstats", "quanteda.textplots",
   "seededlda", "topicmodels", "ldatuning",
-  "syuzhet", "ggrepel", "scales"
+  "tidytext", "scales", "broom", "reticulate"
 ))
 ```
 
-All analysis is performed on Spanish text. The scripts and comments are in
-English.
+Sentiment in `05_NLP_sentiment.R` uses a Spanish transformer
+(`pysentimiento/robertuito-sentiment-analysis`) called via reticulate +
+HuggingFace `transformers`, following the same pattern as the Day 5 UK
+manifestos prep script. Python side:
+
+```bash
+pip install transformers torch
+```
+
+If you run inside a conda environment, uncomment the `use_condaenv(...)`
+line at the top of `05_NLP_sentiment.R`.
 
 ## Notes on the data
 
-- Presidential discourses come from the official Presidencia
-  (`presidencia.gob.do`) — public domain.
-- Reddit data is scraped from `r/Dominicanos`. The `AutoModerator` user is
-  filtered out during preprocessing.
-- Migration CSVs (`arrestos`, `detenidos_frontera`, `Naturalizaciones`) are
-  reused from the original 2023 migration report. They are Latin-1 encoded
-  with the column `AÑO` mojibaked; the preprocessing script handles this.
+- Presidential discourses come from Presidencia (`presidencia.gob.do`).
+- Reddit data is scraped from `r/Dominicanos` and pre-filtered to posts
+  and comments containing at least one of `haiti`, `haitianos`,
+  `extranjeros`, `inmigrantes`, `inmigracion`, `migracion`.
+  `AutoModerator` is filtered out during preprocessing.
+- Migration CSVs (`arrestos`, `detenidos_frontera`, `Naturalizaciones`)
+  are reused from the 2023 migration report. Two of them are Latin-1
+  encoded — `03_RD_descriptive_stats.R` handles this with
+  `fileEncoding = "Latin1"`.

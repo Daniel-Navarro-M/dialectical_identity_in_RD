@@ -1,13 +1,16 @@
 # Build cleaned corpora + DFMs for presidential discourses and Reddit.
+# Also emits a sentence-level Reddit table for transformer sentiment in 04.
+# DFM trimming thresholds are exposed at the top — explore frequencies first
+# before committing to them.
 
-library(tidyverse)
-library(pdftools)
-library(stringi)
-library(quanteda)
+library(tidyverse); library(pdftools); library(stringi); library(quanteda)
 
 dir.create("data/processed", showWarnings = FALSE, recursive = TRUE)
 
-# --- Discourses ----------------------------------------------------------------
+MIN_TERMFREQ <- 5    # tentative — revisit after looking at term-freq histogram
+MIN_DOCFREQ  <- 2    # tentative — revisit after looking at doc-freq histogram
+
+# --- Discourses ---------------------------------------------------------------
 discursos <- list.files("data/raw/discursos", "\\.pdf$", full.names = TRUE) |>
   map_dfr(\(f) tibble(doc_id = tools::file_path_sans_ext(basename(f)),
                       text   = pdf_text(f))) |>
@@ -30,12 +33,12 @@ dfm_d <- tokens(corpus_d, remove_punct = TRUE, remove_symbols = TRUE,
                 remove_numbers = TRUE, remove_url = TRUE) |>
   tokens_tolower() |>
   tokens_remove(c(stopwords("es"), discursos_stop)) |>
-  dfm() |> dfm_trim(min_termfreq = 5, min_docfreq = 2)
+  dfm() |> dfm_trim(min_termfreq = MIN_TERMFREQ, min_docfreq = MIN_DOCFREQ)
 
 saveRDS(corpus_d, "data/processed/discursos_corpus.rds")
 saveRDS(dfm_d,    "data/processed/discursos_dfm.rds")
 
-# --- Reddit --------------------------------------------------------------------
+# --- Reddit (document level) --------------------------------------------------
 reddit <- read_csv("data/raw/dataset_reddit.csv", show_col_types = FALSE) |>
   mutate(text = if_else(dataType == "post",
                         paste(replace_na(title, ""), replace_na(body, "")),
@@ -59,9 +62,26 @@ dfm_r <- tokens(corpus_r, remove_punct = TRUE, remove_symbols = TRUE,
   tokens_tolower() |>
   tokens_remove(c(stopwords("es"), reddit_stop)) |>
   tokens_keep(min_nchar = 3) |>
-  dfm() |> dfm_trim(min_termfreq = 5, min_docfreq = 2)
+  dfm() |> dfm_trim(min_termfreq = MIN_TERMFREQ, min_docfreq = MIN_DOCFREQ)
 
 saveRDS(corpus_r, "data/processed/reddit_corpus.rds")
 saveRDS(dfm_r,    "data/processed/reddit_dfm.rds")
 
-message("Discursos: ", nrow(discursos), " paragraphs. Reddit: ", nrow(reddit), " docs.")
+# --- Reddit (sentence level, for transformer sentiment) -----------------------
+# Spanish sentence splitter: period/!/? followed by whitespace + capital.
+split_sent <- \(t) stri_split_regex(t, "(?<=[.!?])\\s+(?=[A-ZÁÉÍÓÚÑ])")
+
+reddit_sents <- reddit |>
+  mutate(sent = split_sent(text)) |> unnest(sent) |>
+  mutate(sent = str_squish(sent)) |>
+  filter(nchar(sent) >= 15) |>
+  transmute(sentence_id = row_number(), post_id, username, upVotes, text = sent)
+
+saveRDS(reddit_sents, "data/processed/reddit_sentences.rds")
+
+# --- Frequency exploration (run interactively to set MIN_TERMFREQ / MIN_DOCFREQ)
+# Term frequency: how many tokens appear N times in the corpus?
+# Doc frequency: how many tokens appear in N documents?
+# Look at these distributions for both DFMs before committing to thresholds.
+tf_d <- featfreq(dfm_d); tf_r <- featfreq(dfm_r)
+df_d <- docfreq(dfm_d);  df_r <- docfreq(dfm_r)

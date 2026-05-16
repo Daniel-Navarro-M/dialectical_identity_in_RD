@@ -38,4 +38,3 @@ walk2(df_index$link, df_index$file, \(u, f) {
 })
 
 write_csv(df_index, "data/raw/discursos_index.csv")
-message(sum(file.exists(df_index$file)), " / ", nrow(df_index), " PDFs present")
