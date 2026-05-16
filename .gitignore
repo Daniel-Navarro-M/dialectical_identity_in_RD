@@ -1,0 +1,25 @@
+# R session files
+.Rhistory
+.RData
+.Rproj.user/
+.Ruserdata
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Jupyter checkpoints (some EDA may be done in notebooks)
+.ipynb_checkpoints/
+
+# Secrets — never commit API keys
+data/raw/api_key
+data/raw/api_key/
+*.env
+.Renviron
+
+# Large intermediate artifacts you may want to regenerate locally rather than
+# track. The pipeline can rebuild everything in data/processed/ from data/raw/.
+# Comment the next line back in if you decide processed artifacts shouldn't ship.
+# data/processed/
