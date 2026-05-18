@@ -10,13 +10,21 @@ Author: Daniel Navarro (`navarro_daniel@student.ceu.edu`).
 
 ## Pipeline
 
+Reddit input (`data/raw/dataset_reddit_translated.csv`) was produced once
+by an out-of-band Helsinki MarianMT (`Helsinki-NLP/opus-mt-en-es`) pass on
+the original `dataset_reddit.csv`. The translated CSV is committed; the
+R pipeline reads it directly and drops the few rows where translation
+failed (they stay flagged `lang == "en"` and `translated == FALSE`).
+
+R pipeline (run top to bottom):
+
 | Script | Inputs | Outputs |
 |---|---|---|
 | `01_data_collection.R` | https://presidencia.gob.do/discursos | `data/raw/discursos/*.pdf` |
-| `02_preprocessing.R` | `data/raw/discursos/*.pdf`, `data/raw/dataset_reddit.csv` | `data/processed/{discursos,reddit}_{corpus,dfm}.rds`, `data/processed/reddit_sentences.rds` |
+| `02_preprocessing.R` | `data/raw/discursos/*.pdf`, `data/raw/dataset_reddit_translated.csv` | `data/processed/{discursos,reddit}_{corpus,dfm}.rds`, `data/processed/reddit_sentences.rds` |
 | `03_RD_descriptive_stats.R` | `data/raw/{arrestos,detenidos_frontera,Naturalizaciones}.csv` | `output/figures/descriptive_stats/*.png` |
-| `04_NLP_topics.R` | `data/processed/*` | keyword tables, ldatuning K-sweeps, seeded LDA, migration framing plot |
-| `05_NLP_sentiment.R` | `data/processed/*` | transformer sentiment, hait* negativity, per-keyword pos/neg, upvote weighting |
+| `04_NLP_topics.R` | `data/processed/*` | keyword tables, KWIC, ldatuning K-sweep, seeded LDA (Reddit) |
+| `05_NLP_sentiment.R` | `data/processed/*` | transformer sentiment (uses reticulate), negativity, H1 plot |
 
 Scripts are designed to be run interactively, section by section. Key
 decision points (DFM trimming thresholds in `02`, K per corpus in `04`) are

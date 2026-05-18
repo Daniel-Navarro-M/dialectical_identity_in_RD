@@ -1,0 +1,17 @@
+category,count,rate,source
+haiti,91,1.4641288433382138,Discourses
+foreigners,36,0.5792158061557768,Discourses
+inmigration,6,0.09653596769262948,Discourses
+migration,34,0.5470371502582337,Discourses
+border,98,1.576754138979615,Discourses
+deportation,68,1.0940743005164675,Discourses
+refugee,8,0.12871462359017263,Discourses
+ilegal,13,0.20916126333403054,Discourses
+haiti,1215,25.304065311562812,Reddit
+foreigners,236,4.915028323892036,Reddit
+inmigration,141,2.9365211596134624,Reddit
+migration,196,4.081972675774741,Reddit
+border,178,3.7070976341219595,Reddit
+deportation,97,2.0201599466844384,Reddit
+refugee,15,0.31239586804398534,Reddit
+ilegal,195,4.06114628457181,Reddit

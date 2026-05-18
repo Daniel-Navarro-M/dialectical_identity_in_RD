@@ -23,3 +23,4 @@ data/raw/api_key/
 # track. The pipeline can rebuild everything in data/processed/ from data/raw/.
 # Comment the next line back in if you decide processed artifacts shouldn't ship.
 # data/processed/
+.positai

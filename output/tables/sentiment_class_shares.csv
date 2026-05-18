@@ -1,0 +1,7 @@
+corpus,label,n,share
+Discourses,Negative,897,0.1318342151675485
+Discourses,Neutral,3185,0.46810699588477367
+Discourses,Positive,2722,0.4000587889476778
+Reddit,Negative,3806,0.48067693862086386
+Reddit,Neutral,3524,0.4450618843142208
+Reddit,Positive,588,0.07426117706491538
