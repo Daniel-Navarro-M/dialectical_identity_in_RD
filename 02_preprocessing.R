@@ -16,7 +16,7 @@ library(cld3)
 
 dir.create("data/processed", showWarnings = FALSE, recursive = TRUE)
 
-# --- Parameters --------------------------------------------------------------
+## Parameters ----
 
 # DFM trimming. Drops tokens that appear fewer than MIN_TERMFREQ times overall
 # or in fewer than MIN_DOCFREQ sentences. The whitelist below rescues
@@ -83,7 +83,7 @@ compound_phrases <- phrase(c("cadena perpetua", "millones pesos",
 # Spanish sentence splitter: punctuation followed by whitespace + capital and accents.
 split_sent <- \(t) stri_split_regex(t, "(?<=[.!?])\\s+(?=[A-ZÁÉÍÓÚÑ])")
 
-# --- Tokenization + DFM builder ----
+# Tokenization + DFM builder ----
 
 build_corpus_dfm <- function(df, stops, min_nchar = 3) {
   corp <- corpus(df, text_field = "text", docid_field = "sentence_index")
@@ -189,11 +189,11 @@ cat("Discourses sentences: ", nrow(discursos_sentences),
 cat("Reddit sentences:", nrow(reddit_sentences),
     " | DFM features:", nfeat(R$dfm), "\n")
 
-# TOP 25 FEATURES PER CORPUS
+## TOP 25 FEATURES PER CORPUS ----
 cat("\n-- Discourses --\n"); print(topfeatures(D$dfm, 25))
 cat("\n-- Reddit --\n");     print(topfeatures(R$dfm, 25))
 
-# COLLOCATIONS 
+## COLLOCATIONS ----
 cat("\n-- Discourses --\n")
 print(head(textstat_collocations(D$toks, size = 2, min_count = 10), 15))
 cat("\n-- Reddit --\n")
@@ -206,7 +206,8 @@ cat("\n-- Reddit --\n");     print(head(kwic(tokens(R$corpus), "hait*", 6), 20))
 cat("\n-- Discourses --\n"); print(head(kwic(tokens(D$corpus), "migra*", 6), 20))
 cat("\n-- Reddit --\n");     print(head(kwic(tokens(R$corpus), "migra*", 6), 20))
 
-# Keyword survival check: verifiyng that the migration / racialization vocabulary
+## Keyword survival check ---- 
+# verifiyng that the migration / racialization vocabulary
 # of interest is still in the trimmed DFM after the whitelist union. Anything
 # that surfaces here as NA is either absent from the corpus or lost to
 # trimming; whitelist entries should never be NA.
@@ -219,7 +220,8 @@ print(tibble(word = mig_check,
              tf_d = featfreq(D$dfm_full)[mig_check],
              tf_r = featfreq(R$dfm_full)[mig_check]))
 
-# Term-frequency exploration: vocabulary size at candidate trimming thresholds,
+## Term-frequency exploration ----
+# vocabulary size at candidate trimming thresholds,
 # and the log-frequency distribution. Used to decide MIN_TERMFREQ.
 print(sapply(c(1, 2, 3, 5, 10, 20),
              \(k) c(discursos = sum(featfreq(D$dfm_full) >= k),

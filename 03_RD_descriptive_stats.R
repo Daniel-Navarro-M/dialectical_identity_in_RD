@@ -10,7 +10,7 @@ dir.create("output/figures/descriptive_stats", showWarnings = FALSE, recursive =
 ACC <- "steelblue"
 OUT <- "output/figures/descriptive_stats"
 
-# Plot theme — tweak any element below; it applies to every plot in the script.
+# Plot theme
 THEME <- theme_minimal(base_size = 12) +
   theme(
     plot.title       = element_text(face = "bold", size = 13),
@@ -59,7 +59,7 @@ p2 <- frontera |>
 ggsave(file.path(OUT, "02_detentions_by_month.png"), p2,
        width = 9, height = 5.5, dpi = 200, bg = "white")
 
-# --- Naturalizations ----------------------------------------------------------
+# --- Naturalizations ----
 country_en <- c(Colombia="Colombia", Cuba="Cuba", Venezuela="Venezuela", Italia="Italy",
                 España="Spain", Haiti="Haiti", Francia="France",
                 `Estados Unidos`="United States", Rusia="Russia", China="China",
@@ -81,7 +81,7 @@ p3 <- read.csv("data/raw/Naturalizaciones.csv", fileEncoding = "Latin1") |>
 ggsave(file.path(OUT, "03_naturalizations_by_country.png"), p3,
        width = 9, height = 5.5, dpi = 200, bg = "white")
 
-# --- Arrests ------------------------------------------------------------------
+# --- Arrests ----
 arr <- read.csv("data/raw/arrestos.csv", fileEncoding = "Latin1") |>
   as_tibble() |>
   rename(attr = 1, n = 2, period = 3, year = 4)

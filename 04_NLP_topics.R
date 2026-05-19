@@ -82,7 +82,7 @@ ggsave(file.path(OUT, "01_keyword_frequency.png"), p1,
        width = 10, height = 6, dpi = 200, bg = "white")
 
 
-# 2. Seeded LDA + unseeded LDA validation ----
+# Seeded LDA + unseeded LDA validation ----
 
 # K = 6 is fixed ad hoc.
 # DFMs because the per-document term counts are low, the metrics disagree.
@@ -150,7 +150,6 @@ p_prev <- ggplot(prev, aes(reorder(topic, share), share)) +
 ggsave(file.path(OUT, "03_topic_prevalence.png"), p_prev,
        width = 10, height = 6, dpi = 200, bg = "white")
 
-
 # Top three representative sentences per seeded topic
 # Each sentence is shown with its theta probability for the topic; these are
 # the qualitative anchors for naming the topics in the article.
@@ -176,9 +175,7 @@ for (tp in colnames(slda_r$theta)) {
 }
 
 
-# ===========================================================================
-# 3. DBSCAN clustering on TF-IDF / truncated SVD
-# ===========================================================================
+# DBSCAN clustering on TF-IDF / truncated SVD ----
 # Alternative exploration: density-based clustering does not require a fixed
 # number of clusters and labels low-density points as noise (cluster 0).
 # It answers a different question than LDA: not "what theme mixture does this
@@ -195,7 +192,7 @@ m_tfidf <- as.matrix(dfm_tfidf(dfm_r_top))
 sv      <- svd(m_tfidf, nu = 30, nv = 0)
 emb_svd <- sv$u
 
-# k-NN distance plot for eps selection
+## k-NN distance plot for eps selection ----
 png(file.path(OUT, "04_dbscan_knn_dist.png"), 1000, 600, res = 150)
 dbscan::kNNdistplot(emb_svd, k = 30)
 abline(h = 0.041, lty = 2, col = "grey50")
@@ -203,7 +200,7 @@ title(main = "DBSCAN tuning: 30-NN distance plot",
       sub  = "Pick eps at the elbow of the sorted distance curve")
 dev.off()
 
-# DBSCAN with starting parameters.
+## DBSCAN with starting parameters ----
 db <- dbscan::dbscan(emb_svd, eps = 0.041, minPts = 30)
 
 cat("\n========= DBSCAN CLUSTER SIZES =========\n")
@@ -219,7 +216,7 @@ sent_clustered <- sent_r |>
 saveRDS(sent_clustered, "data/processed/reddit_sentences_dbscan.rds")
 
 
-# Top words per DBSCAN cluster 
+## Top words per DBSCAN cluster ----
 cluster_words <- sent_clustered |>
   filter(cluster > 0) |>
   select(sentence_index, cluster, text) |>
