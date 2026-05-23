@@ -202,9 +202,6 @@ dev.off()
 
 ## DBSCAN with starting parameters ----
 db <- dbscan::dbscan(emb_svd, eps = 0.041, minPts = 30)
-
-cat("\n========= DBSCAN CLUSTER SIZES =========\n")
-cat("Cluster 0 = noise points (no dense neighborhood).\n")
 print(table(db$cluster))
 
 # Attach cluster labels back to the sentence-level data
@@ -227,7 +224,6 @@ cluster_words <- sent_clustered |>
   slice_max(n, n = 10) |>
   ungroup()
 
-cat("\n========= TOP 10 WORDS PER DBSCAN CLUSTER =========\n")
 for (k in sort(unique(cluster_words$cluster))) {
   cat("\n--- cluster ", k, " (",
       sum(sent_clustered$cluster == k), " sentences) ---\n", sep = "")
