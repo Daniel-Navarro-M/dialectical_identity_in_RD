@@ -24,3 +24,7 @@ data/raw/api_key/
 # Comment the next line back in if you decide processed artifacts shouldn't ship.
 # data/processed/
 .positai
+
+# Word/Office temp and lock files
+~$*
+~WRL*.tmp
